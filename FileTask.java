@@ -3,10 +3,7 @@ package sample;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class FileTask extends Task<Void> {
@@ -31,19 +28,21 @@ public class FileTask extends Task<Void> {
 
         updateMessage("Sending...");
         try (Socket socket = new Socket("localhost", 27013);
-             OutputStream output = socket.getOutputStream();
+             DataOutputStream output = new DataOutputStream(socket.getOutputStream());
              BufferedInputStream input = new BufferedInputStream(
                      new FileInputStream(file))) {
 
             byte[] buffer = new byte[4096];
             int nRead;
             int nSent = 0;
+
+            output.writeUTF(file.getName());
+
             while (true) {
                 nRead = input.read(buffer, 0, buffer.length);
                 if (nRead <= 0)
                     break;
                 nSent += nRead;
-
                 output.write(buffer, 0, nRead);
                 output.flush();
                 updateProgress(nSent, file.length());
